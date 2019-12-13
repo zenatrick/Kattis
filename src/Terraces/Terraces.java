@@ -27,6 +27,7 @@ class Terraces {
             }
         }
 
+        // Perform BFS on every vertices. Visited vertices will return immediately.
         int count = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
