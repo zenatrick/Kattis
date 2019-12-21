@@ -6,7 +6,7 @@ import java.util.PriorityQueue;
  * The SSSGraph class is used for SSSP algorithms such as Dijkstra's and
  * Bellman-Ford. The graph is represented using an adjacency list.
  * 
- * Created by Teng Le. Last updated on 18 December 2019.
+ * Created by Teng Le. Last updated on 21 December 2019.
  */
 class SSSPGraph {
     /** Infinity value. */
@@ -90,40 +90,41 @@ class SSSPGraph {
     /** Number of edges in the graph. */
     private final int edges;
 
+    /** Adjacency List representation of the graph. */
+    private final ArrayList<ArrayList<Edge>> adjList;
+
     /** Array that stores the shortest distance. */
     private final double[] dist;
 
     /** Array that stores the parent node for shortest distance. */
     private final int[] parent;
 
-    /** Adjacency List representation of the graph. */
-    private final ArrayList<ArrayList<Edge>> adjList;
-
     /** Check if a shortest path algorithm is performed. */
-    private boolean isSPDone = false;
+    private boolean isSPDone;
 
     /**
      * Private Constructor to create new a new Graph.
      * 
-     * @param nodes   The number of nodes in the graph.
-     * @param edges   The number of edges in the graph.
-     * @param dist    The distance array to store the shortest distance for SSSP.
-     * @param parent  The parent pointer array to store the shortest path for SSSP.
-     * @param adjList The adjacency list representation of the graph.
+     * @param nodes     The number of nodes in the graph.
+     * @param edges     The number of edges in the graph.
+     * @param storePath True if path should be stored, else false.
      */
-    private SSSPGraph(final int nodes, final int edges, final double[] dist, final int[] parent,
-            final ArrayList<ArrayList<Edge>> adjList) {
+    private SSSPGraph(final int nodes, final int edges, final boolean storePath) {
         this.nodes = nodes;
         this.edges = edges;
-        this.dist = dist;
-        this.parent = parent;
-        resetGraphForSSSP();
-        this.adjList = adjList;
-        if (adjList != null) {
-            for (int i = 0; i < nodes; i++) {
-                adjList.add(new ArrayList<>());
-            }
+        dist = new double[nodes];
+        Arrays.fill(dist, INF);
+        if (storePath) {
+            parent = new int[nodes];
+            Arrays.fill(parent, -1);
+        } else {
+            parent = null;
         }
+        adjList = new ArrayList<>();
+        for (int i = 0; i < nodes; i++) {
+            adjList.add(new ArrayList<>());
+        }
+        isSPDone = false;
     }
 
     /**
@@ -134,7 +135,7 @@ class SSSPGraph {
      * @return The graph with given number of nodes and edges.
      */
     static SSSPGraph initGraphForSSSP(final int nodes, final int edges) {
-        return new SSSPGraph(nodes, edges, new double[nodes], new int[nodes], new ArrayList<>());
+        return new SSSPGraph(nodes, edges, true);
     }
 
     /**
@@ -146,7 +147,7 @@ class SSSPGraph {
      * @return The graph with given number of nodes and edges.
      */
     static SSSPGraph initGraphForSSSPDist(final int nodes, final int edges) {
-        return new SSSPGraph(nodes, edges, new double[nodes], null, new ArrayList<>());
+        return new SSSPGraph(nodes, edges, false);
     }
 
     /**
@@ -173,25 +174,15 @@ class SSSPGraph {
      * @param u The node in which the edge is coming from.
      * @param v The node in which the edge is going towards.
      * @param w The weight of the edge.
-     * @return The edge that is added to the graph.
      */
-    Edge addEdge(final int u, final int v, final double w) {
-        final Edge e = new Edge(u, v, w);
-        adjList.get(u).add(e);
-        return e;
-    }
-
-    /**
-     * Reset graph for single source shortest path.
-     */
-    void resetGraphForSSSP() {
-        if (dist != null) {
-            Arrays.fill(dist, INF);
+    void addEdge(final int u, final int v, final double w) {
+        if (!isSPDone) {
+            final Edge e = new Edge(u, v, w);
+            adjList.get(u).add(e);
+        } else {
+            throw new UnsupportedOperationException(
+                    "Cannot add edges to the graph before performing a shortest path algorithm.");
         }
-        if (parent != null) {
-            Arrays.fill(parent, -1);
-        }
-        isSPDone = false;
     }
 
     /**
@@ -271,8 +262,8 @@ class SSSPGraph {
      *                 distances.
      */
     private void dijkstra(final int source, final boolean withPath) {
-        if (dist == null) {
-            throw new NullPointerException("Distance array is not initialised.");
+        if (isSPDone) {
+            throw new UnsupportedOperationException("A shortest path algorithm has already been performed.");
         }
         /* Set distance of source to 0 */
         dist[source] = 0;
@@ -375,6 +366,10 @@ class SSSPGraph {
      * @return True if there is no negative cycles in the graph, else false.
      */
     private boolean bellmanFord(final int source, final boolean withPath) {
+        if (isSPDone) {
+            throw new UnsupportedOperationException("A shortest path algorithm has already been performed.");
+        }
+
         dist[source] = 0;
 
         /*
