@@ -78,13 +78,13 @@ class Graph {
         Pair<LinkedList<Integer>> listPair = generateLists();
         LinkedList<Integer> list1 = listPair.first;
         LinkedList<Integer> list2 = listPair.second;
-        int count1 = getCount(list1, list2, true, -1);
+        int count1 = getCount(list1, list2, true, 0);
 
         /* Get the number of transfers starting from lab2. */
         Pair<LinkedList<Integer>> listPair2 = generateLists();
         list1 = listPair2.first;
         list2 = listPair2.second;
-        int count2 = getCount(list1, list2, false, -1);
+        int count2 = getCount(list1, list2, false, 0);
 
         /* Result will be the minimum of the 2. */
         return Math.min(count1, count2);
@@ -120,7 +120,7 @@ class Graph {
      */
     private int getCount(LinkedList<Integer> list1, LinkedList<Integer> list2, boolean isList1, int count) {
         if (list1.isEmpty() && list2.isEmpty()) {
-            return count;
+            return count - 1;
         }
 
         LinkedList<Integer> currList = isList1 ? list1 : list2;
